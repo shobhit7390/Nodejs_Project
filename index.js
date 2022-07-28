@@ -90,10 +90,10 @@ app.post('/add_to_cart',function(req,res){
             cart.push(product);
         }
     }
-        else{
-            req.session.cart=[product];
-            var cart=req.session.cart;
-        }
+    else{
+        req.session.cart=[product];
+        var cart=req.session.cart;
+    }
 
     // Calculate Total
     calculateTotal(cart,req);
@@ -112,4 +112,20 @@ app.get('/cart',function(req,res){
 
     res.render('pages/cart',{cart:cart,total:total});
 
+});
+
+
+app.post("/remove_product",function(req,res){
+    var id=req.body.id;
+    var cart=req.session.cart;
+
+    for(let i=0;i<cart.length;i++){
+        if(cart[i].id==id){
+            cart.splice(cart.indexOf(i),1);
+        }
+    }
+
+    // re-calculate
+    calculateTotal(cart,req);
+    res.redirect('/cart');
 });

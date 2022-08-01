@@ -184,6 +184,7 @@ app.post('/place_order',function(req,res){
     var cost=req.session.total;
     var status="not paid";
     var date=new Date();
+    var products_ids="";
 
     var con=mysql.createConnection({
         host:"localhost",
@@ -192,18 +193,35 @@ app.post('/place_order',function(req,res){
         database:"Nodejs_Project"
     })
 
+    var cart=req.session.cart;
+
+    for(let i=0;i<cart.length;i++){
+        products_ids=products_ids+ "," +cart[i].id;
+    }
+
     con.connect((err)=>{
         if(err){
             console.log(err);
         }
         else{
-            var query="INSERT INTO orders(cost,name,email,status,city,address,phone,date) VALUES ?";
+            var query="INSERT INTO orders(cost,name,email,status,city,address,phone,date,products_ids) VALUES ?";
             var values=[
-                [cost,name,email,status,city,address,phone,date]
+                [cost,name,email,status,city,address,phone,date,products_ids]
             ];
 
             con.query(query,[values],(err,result)=>{
+
+                for(let i=0;i<cart.length;i++){
+                    var query="INSERT INTO order_items (order_id,product_id,product_name,product_price,product_image,product_quantity,order_date) VALUES ?";
+                    var values=[
+                        [id,cart[i].id,cart[i].name,cart[i].price,cart[i].image,cart[i].quantity,new Date()]
+                    ];
+                    con.query(query,[values],(err,result)=>{})
+                }
+
+
                 res.redirect('/payment');
+
             })
         }
     })
@@ -212,5 +230,12 @@ app.post('/place_order',function(req,res){
 
 
 app.get('/payment',function(req,res){
-    res.render('/pages/payment');
+    var total=req.session.total;
+    res.render('/pages/payment',{total:total});
+});
+
+
+app.get("/verify_payment",function(req,res){
+    var transaction_id=req.query.transaction_id;
+    
 });

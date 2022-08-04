@@ -268,8 +268,52 @@ app.get("/verify_payment",function(req,res){
 
 
 
+
 app.get("/thank_you",function(req,res){
 
     var order_id=req.session.order_id;
     res.render("pages/thank_you",{order_id:order_id})
-})
+});
+
+app.get("/single_product",function(req,res){
+
+    var id=req.query.id;
+
+    var con=mysql.createConnection({
+        host:"localhost",
+        user:"root",
+        password:"",
+        database:"Nodejs_Project"
+    })
+
+    con.query("SELECT * FROM products WHERE id='"+id+"'",(err,result)=>{
+
+        res.render('pages/single_product',{result:result});
+
+    })
+
+    
+});
+
+app.get("/products",function(req,res){
+
+    var con=mysql.createConnection({
+        host:"localhost",
+        user:"root",
+        password:"",
+        database:"Nodejs_Project"
+    })
+
+    con.query("SELECT * FROM products",(err,result)=>{
+
+        res.render('pages/products',{result:result});
+
+    })
+
+    
+});
+
+app.get("/about",function(req,res){
+
+    res.render('pages/about');
+});

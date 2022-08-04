@@ -185,6 +185,8 @@ app.post('/place_order',function(req,res){
     var status="not paid";
     var date=new Date();
     var products_ids="";
+    var id=Date.now();
+    req.session.order_id=id;
 
     var con=mysql.createConnection({
         host:"localhost",
@@ -204,9 +206,9 @@ app.post('/place_order',function(req,res){
             console.log(err);
         }
         else{
-            var query="INSERT INTO orders(cost,name,email,status,city,address,phone,date,products_ids) VALUES ?";
+            var query="INSERT INTO orders(id,cost,name,email,status,city,address,phone,date,products_ids) VALUES ?";
             var values=[
-                [cost,name,email,status,city,address,phone,date,products_ids]
+                [id,cost,name,email,status,city,address,phone,date,products_ids]
             ];
 
             con.query(query,[values],(err,result)=>{
@@ -231,11 +233,43 @@ app.post('/place_order',function(req,res){
 
 app.get('/payment',function(req,res){
     var total=req.session.total;
-    res.render('/pages/payment',{total:total});
+    res.render('pages/payment',{total:total});
 });
 
 
 app.get("/verify_payment",function(req,res){
     var transaction_id=req.query.transaction_id;
-    
+    var order_id=req.session.order_id;
+
+    var con=mysql.createConnection({
+        host:"localhost",
+        user:"root",
+        password:"",
+        database:"Nodejs_Project"
+    })
+
+    con.connect((err)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            var query="INSERT INTO payments (order_id,transaction_id,date) VALUES ?";
+            var values=[
+                [order_id,transaction_id,new Date()]
+            ]
+            con.query(query,[values],(err,result)=>{
+
+                con.query("UPDATE orders SET status='paid' WHERE id='"+order_id+"'",(err,result)=>{})
+                res.redirect('/thank_you')
+            })
+        }
+        })
 });
+
+
+
+app.get("/thank_you",function(req,res){
+
+    var order_id=req.session.order_id;
+    res.render("pages/thank_you",{order_id:order_id})
+})
